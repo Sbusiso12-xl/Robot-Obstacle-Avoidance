@@ -1,0 +1,104 @@
+Obstacle-Avoiding Robot Wiring and Setup Report
+Project Title:
+Smart Obstacle-Avoiding Robot with Path Scanning, Memory, and Fast Response
+
+Objective:
+To build and configure an Arduino-based robot that avoids obstacles with fast and smart scanning. The robot uses a servo-mounted ultrasonic sensor for environment awareness and remembers clear paths. It is powered by batteries for full mobility.
+
+Hardware Components Required:
+Component	Quantity
+Arduino Uno	1
+Ultrasonic Sensor (HC-SR04)	1
+Servo Motor (e.g. SG90)	1
+L298N Motor Driver	1
+DC Motors + Wheels	2
+Robot Chassis	1
+Power Supply (6xAA NiMH / 7.4V Li-ion)	1
+Breadboard (optional)	1
+Jumper Wires	Several
+1000µF Capacitor	1
+Green and Red LEDs	1 each
+220Ω Resistors (for LEDs)	2
+SPDT Switch	1
+
+Power Supply Notes:
+Do NOT power motors or servo from the Arduino 5V pin.
+
+Use a separate power source for motors and the servo.
+
+Share the GND line between all components.
+
+Step-by-Step Connection Guide:
+🧠 1. Arduino and Motor Driver (L298N)
+Arduino Pin	L298N Pin
+4 (MLa)	IN1
+5 (MLb)	IN2
+6 (MRa)	IN3
+7 (MRb)	IN4
+GND	GND
+Vin	12V IN (if L298N needs logic power)
+
+Motor Wires: Connect motor terminals to OUT1/OUT2 and OUT3/OUT4 of L298N.
+
+Power: Connect battery pack (7.2V–9V) to L298N +12V and GND.
+
+📡 2. Ultrasonic Sensor (HC-SR04)
+Arduino Pin	HC-SR04 Pin
+9	TRIG
+8	ECHO
+5V (separate)	VCC
+GND	GND
+
+🦾 3. Servo Motor (SG90)
+Arduino Pin	Servo Pin
+10	Signal
+5V from Battery Buck Converter or Regulated 5V Supply	VCC
+GND	GND
+
+Add 1000µF Capacitor between Servo VCC and GND to reduce brownouts.
+
+💡 4. LED Indicators
+Arduino Pin	Component	Resistor	Color
+2	Green LED	220Ω	Green
+3	Red LED	220Ω	Red
+
+Cathode (short leg) to GND.
+
+🔘 5. SPDT Switch
+Pin	Connection
+12	Middle pin (signal)
+One side	5V
+Other side	GND
+
+This acts as an ON/OFF toggle to enable or disable the robot logic.
+
+Programming and Uploading
+Open Arduino IDE.
+
+Paste the final optimized code (provided in previous messages).
+
+Connect Arduino via USB.
+
+Select board and port.
+
+Upload code.
+
+Disconnect USB and connect battery.
+
+Testing Checklist
+Test	Expected Behavior
+Ultrasonic detection	Robot moves forward if no obstacle within 18cm
+Obstacle near (<10cm)	Robot stops and scans
+Clear path found	Robot immediately goes that way
+No path found	Robot reverses briefly
+Switch turned OFF	Robot stops, LEDs OFF
+Servo operation	Smooth movement, no jitter
+LED indication	Green = Clear, Red = Obstacle
+
+Final Notes:
+Ensure GND is shared between all power sources and components.
+
+For better performance, use a buck converter to regulate 5V to the servo.
+
+To avoid motor interference, route servo wires separately if possible.
+

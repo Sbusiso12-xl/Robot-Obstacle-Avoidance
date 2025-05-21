@@ -1,0 +1,153 @@
+#include <Servo.h>
+Servo Myservo;
+
+#define trigPin 9
+#define echoPin 8
+#define MLa 4
+#define MLb 5
+#define MRa 6
+#define MRb 7
+
+#define greenLED 2
+#define redLED 3
+#define switchPin 12
+
+long duration;
+float distance, leftDist, rightDist;
+String lastDirection = "right"; // Used for path smoothing
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(MLa, OUTPUT);
+  pinMode(MLb, OUTPUT);
+  pinMode(MRa, OUTPUT);
+  pinMode(MRb, OUTPUT);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pinMode(greenLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+
+  pinMode(switchPin, INPUT);
+
+  Myservo.attach(10);
+}
+
+float getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH, 30000);
+  return duration / 58.2;
+}
+
+void moveForward() {
+  digitalWrite(MRb, HIGH);
+  digitalWrite(MRa, LOW);
+  digitalWrite(MLb, HIGH);
+  digitalWrite(MLa, LOW);
+}
+
+void reverse() {
+  digitalWrite(MRb, LOW);
+  digitalWrite(MRa, HIGH);
+  digitalWrite(MLb, LOW);
+  digitalWrite(MLa, HIGH);
+}
+
+void stopMotors() {
+  digitalWrite(MRb, LOW);
+  digitalWrite(MRa, LOW);
+  digitalWrite(MLb, LOW);
+  digitalWrite(MLa, LOW);
+}
+
+void turnLeft() {
+  digitalWrite(MRb, LOW);
+  digitalWrite(MRa, HIGH);
+  digitalWrite(MLb, HIGH);
+  digitalWrite(MLa, LOW);
+}
+
+void turnRight() {
+  digitalWrite(MRb, HIGH);
+  digitalWrite(MRa, LOW);
+  digitalWrite(MLb, LOW);
+  digitalWrite(MLa, HIGH);
+}
+
+void loop() {
+  if (digitalRead(switchPin) == LOW) {
+    stopMotors();
+    digitalWrite(greenLED, LOW);
+    digitalWrite(redLED, LOW);
+    return;
+  }
+
+  distance = getDistance();
+  Serial.print("Forward Distance: ");
+  Serial.println(distance);
+
+  if (distance > 18 || distance == 0) {
+    digitalWrite(greenLED, HIGH);
+    digitalWrite(redLED, LOW);
+    Myservo.write(90);
+    moveForward();
+    return;
+  }
+
+  // Obstacle detected
+  stopMotors();
+  digitalWrite(greenLED, LOW);
+  digitalWrite(redLED, HIGH);
+
+  // Scan Left
+  Myservo.write(0);
+  delay(200);
+  leftDist = getDistance();
+  Serial.print("Left Distance: ");
+  Serial.println(leftDist);
+
+  if (leftDist > 10) {
+    turnLeft();
+    delay(400);
+    stopMotors();
+    lastDirection = "left";
+    return;
+  }
+
+  // Scan Right
+  Myservo.write(180);
+  delay(200);
+  rightDist = getDistance();
+  Serial.print("Right Distance: ");
+  Serial.println(rightDist);
+
+  if (rightDist > 10) {
+    turnRight();
+    delay(400);
+    stopMotors();
+    lastDirection = "right";
+    return;
+  }
+
+  // No clear path found
+  Myservo.write(90); // Reset forward
+  reverse();
+  delay(400);
+  stopMotors();
+
+  // Try remembered path
+  if (lastDirection == "right") {
+    turnRight();
+    delay(400);
+    stopMotors();
+  } else {
+    turnLeft();
+    delay(400);
+    stopMotors();
+  }
+}
